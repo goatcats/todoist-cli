@@ -87,7 +87,7 @@ const path = process.argv[1].replace("main.mjs", "");
             "rows": rows
         });
 
-        await callback(tasks);
+        await callback(tasks, data);
     }
 
     switch (args[0]) {
@@ -96,7 +96,8 @@ const path = process.argv[1].replace("main.mjs", "");
             break;
 
         case "e":
-            await list_tasks(async (tasks) => {
+            let help = false;
+            await list_tasks(async (tasks, confData) => {
                 console.log(`Syntax: <number> <option> [value] | help`);
                 const inpString = input(">> ");
                 if (!inpString) {process.exit(1)}
@@ -134,38 +135,46 @@ const path = process.argv[1].replace("main.mjs", "");
                     } catch (error) {
                         console.log("Error uploading selection");
                     } 
+                } else if (data === "help") {
+                    help = true
                 }
             });
-            await list_tasks(()=>{});
+            if (!help) {
+                await list_tasks(()=>{});
+            }
             break;
 
         case "a":
-            const vName = (name) => name && name.length < 30 && name.length > 2;
-            const vDescription = (description) => description.length < 45;
-            const vDate = (date) => date && /^\d{4}-\d{2}-\d{2}$/.test(date);
-            const vPriority = (priority) => priority && priority >= 1 && priority <= 4;
-              
-            const data = (() => {
-                let name, description, date, priority;
-                while (true) {
-                    name = input("Name: ");
-                    if (!name) {process.exit(1)}
-                    description = input("Description: ");
-                    if (!description) {description = ""}
-                    date = input("Date (YYYY-MM-DD): ");
-                    if (!date) {process.exit(1)}
-                    priority = input("Priority: ");
-                    if (!priority) {process.exit(1)}
-                    if (vName(name) && vDescription(description) && vDate(date) && vPriority(priority)) {break}
-                    else {console.log(chalk.red("Invalid values\n"))}
-                }
-                return {name, description, date, priority};
-            })();
-            await api.addTask({
-                content: data.name,
-                description: data.description,
-                dueDate: data.date,
-                priority: data.priority
+            
+            await list_tasks(async (tasks, confData)=>{
+                const vName = (name) => name && name.length < 30 && name.length > 2;
+                const vDescription = (description) => description.length < 45;
+                const vDate = (date) => date && /^\d{4}-\d{2}-\d{2}$/.test(date);
+                const vPriority = (priority) => priority && priority >= 1 && priority <= 4;
+                
+                const data = (() => {
+                    let name, description, date, priority;
+                    while (true) {
+                        name = input("Name: ");
+                        if (!name) {process.exit(1)}
+                        description = input("Description: ");
+                        if (!description) {description = ""}
+                        date = input("Date (YYYY-MM-DD): ");
+                        if (!date) {process.exit(1)}
+                        priority = input("Priority: ");
+                        if (!priority) {process.exit(1)}
+                        if (vName(name) && vDescription(description) && vDate(date) && vPriority(priority)) {break}
+                        else {console.log(chalk.red("Invalid values\n"))}
+                    }
+                    return {name, description, date, priority};
+                })();
+                await api.addTask({
+                    content: data.name,
+                    description: data.description,
+                    dueDate: data.date,
+                    priority: data.priority,
+                    projectId: confData.selected.id
+                });
             });
             await list_tasks(()=>{});
             break;
