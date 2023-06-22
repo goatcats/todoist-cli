@@ -1,0 +1,14 @@
+{
+  "name": "todoist-cli",
+  "version": "1.0.0",
+  "description": "Simple CLI using todoist api",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "dependencies": {
+    "@doist/todoist-api-typescript": "^2.1.2",
+    "chalk": "^5.2.0",
+    "console-grid": "^2.0.1",
+    "prompt-sync": "^4.2.0"
+  }
+}
