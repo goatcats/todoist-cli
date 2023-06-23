@@ -10,7 +10,7 @@ $ cd todoist-cli
 ```
 #### Build the executable
 ```
-$ npm run build
+$ sudo npm run build
 ```
 
 ## Usage
@@ -48,7 +48,7 @@ At first usage `todo conf` will be run first regardless of the option that was g
 │ 2 │ Sun Jun 25 2023 │ 1 │ Milk  │ --          │
 └───┴─────────────────┴───┴───────┴─────────────┘
 Syntax: <number> <option> [value] | help
->> 
+>> 2 date 2023-06-23
 ~~~
 Options:
 - name 

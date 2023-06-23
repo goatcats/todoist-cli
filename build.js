@@ -1,9 +1,10 @@
-const { homedir } = require('os');
 const fs = require('fs');
 
 const path = process.argv[1].replace("build.js","");
 const content = `#!/bin/sh\nnode ${path}main.mjs $@`;
-const dest = homedir() + "/.local/bin/todo";
+const dest = "/usr/bin/todo";
 
 fs.writeFileSync(dest, content, {flag:'w'});
+fs.chmodSync(dest, "755");
+
 console.log("> build successful!");

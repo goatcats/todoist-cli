@@ -58,11 +58,16 @@ const path = process.argv[1].replace("main.mjs", "");
     const api = new TodoistApi(data.api_key);
 
     async function list_tasks(callback) {
+        if (process.stdout.columns < 95) {
+            console.log("Terminal is too narrow.\nRequired width: 95");
+            return;
+        }
         console.log('\x1Bc');
         const tasks = await api.getTasks({projectId:data.selected.id});
         const rows = [];
         const isToday = (obj) => new Date().toDateString() === new Date(obj.due.date).toDateString();
         const isOverdue = (obj) => new Date() > new Date(obj.due.date)
+        const correct = (str) => str.replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss");
 
         tasks.sort((a, b) => {
             if (!a.due) return -1;
@@ -72,18 +77,18 @@ const path = process.argv[1].replace("main.mjs", "");
 
         for (let i=0; i<tasks.length; i++) {
             if (!tasks[i].due) {
-                rows.push([chalk.gray(i), chalk.gray("--"), chalk.gray(tasks[i].priority), chalk.gray(tasks[i].content), chalk.gray(tasks[i].description === "" ? "--" : tasks[i].description)]);
+                rows.push([chalk.gray(i), chalk.gray("--"), chalk.gray(tasks[i].priority), chalk.gray(correct(tasks[i].content.length>29 ? tasks[i].content.slice(0, 27)+"..." : tasks[i].content)), chalk.gray(tasks[i].description === "" || tasks[i].description === null ? "--" : correct(tasks[i].description.length>29 ? tasks[i].description.slice(0, 27)+"..." : tasks[i].description))]);
             } else if (isToday(tasks[i])) {
-                rows.push([chalk.green(i), chalk.green(new Date(tasks[i].due.date).toDateString()), chalk.green(tasks[i].priority), chalk.green(tasks[i].content), chalk.green(tasks[i].description === "" ? "--" : tasks[i].description)]);
+                rows.push([chalk.green(i), chalk.green(new Date(tasks[i].due.date).toDateString()), chalk.green(tasks[i].priority), chalk.green(correct(tasks[i].content.length>29 ? tasks[i].content.slice(0, 27)+"..." : tasks[i].content)), chalk.green(tasks[i].description === "" || tasks[i].description === null ? "--" : correct(tasks[i].description.length>29 ? tasks[i].description.slice(0, 27)+"..." : tasks[i].description))]);
             } else if (isOverdue(tasks[i])) {
-                rows.push([chalk.red(i), chalk.red(new Date(tasks[i].due.date).toDateString()), chalk.red(tasks[i].priority), chalk.red(tasks[i].content), chalk.red(tasks[i].description === "" ? "--" : tasks[i].description)]);
+                rows.push([chalk.red(i), chalk.red(new Date(tasks[i].due.date).toDateString()), chalk.red(tasks[i].priority), chalk.red(correct(tasks[i].content.length>29 ? tasks[i].content.slice(0, 27)+"..." : tasks[i].content)), chalk.red(tasks[i].description === "" || tasks[i].description === null ? "--" : correct(tasks[i].description.length>29 ? tasks[i].description.slice(0, 27)+"..." : tasks[i].description))]);
             } else {
-                rows.push([chalk.blue(i), chalk.blue(new Date(tasks[i].due.date).toDateString()), chalk.blue(tasks[i].priority), chalk.blue(tasks[i].content), chalk.blue(tasks[i].description === "" ? "--" : tasks[i].description)]);
+                rows.push([chalk.blue(i), chalk.blue(new Date(tasks[i].due.date).toDateString()), chalk.blue(tasks[i].priority), chalk.blue(correct(tasks[i].content.length>29 ? tasks[i].content.slice(0, 27)+"..." : tasks[i].content)), chalk.blue(tasks[i].description === "" || tasks[i].description === null ? "--" : correct(tasks[i].description.length>29 ? tasks[i].description.slice(0, 27)+"..." : tasks[i].description))]);
             }
         }
 
         CG({
-            "columns": [chalk.bold(tasks.length), chalk.bold("Date"), chalk.bold("P"), {"name":chalk.bold("Task"), "maxWidth":30}, {"name":chalk.bold("Description"), "maxWidth":30}],
+            "columns": [chalk.bold(tasks.length), chalk.bold("Date"), chalk.bold("P"), chalk.bold("Task"), chalk.bold("Description")],
             "rows": rows
         });
 
