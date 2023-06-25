@@ -86,4 +86,5 @@ Select a project (default: Inbox)
 
 ## Dependencies
 
-- npm 9.2.0
+- npm v9.2.0
+- node v18.13.0
