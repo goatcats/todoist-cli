@@ -10,10 +10,11 @@ let projects, project
 const path = process.argv[1].replace("main.mjs", "");
 
 (async function main() {
-    const data = (() => {
+    function getData() {
         const data = JSON.parse(fs.readFileSync(`${path}data.json`, {encoding:"utf8", flag:"r"}));
         return !!data.projects && !!data.selected && !!data.api_key ? data : null;
-    })();
+    }
+    let data = getData();
 
     async function setUpWizard() {
         console.log('\x1Bc');
@@ -55,6 +56,7 @@ const path = process.argv[1].replace("main.mjs", "");
     }
 
     const args = process.argv.slice(2);
+    data = getData();
     const api = new TodoistApi(data.api_key);
 
     function incTime(timeString, hours) {
