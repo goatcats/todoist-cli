@@ -83,6 +83,28 @@ const path = process.argv[1].replace("main.mjs", "");
         return `${paddedHours}:${paddedMinutes}`;
     }
 
+    function isTooLate(dateStr) {
+        const currentDate = new Date();
+        const [currentYear, currentMonth, currentDay] = [
+            currentDate.getFullYear(),
+            currentDate.getMonth() + 1, // Months are zero-based, so add 1
+            currentDate.getDate(),
+        ];
+        const [year, month, day] = dateStr.split("-").map(Number);
+
+        // Add 2 months to the current date
+        const futureDate = new Date(currentYear, currentMonth + 2, currentDay);
+
+        // Compare the parsed date with the modified current date
+        return (
+            year > futureDate.getFullYear() ||
+                (year === futureDate.getFullYear() && month > futureDate.getMonth()) ||
+                (year === futureDate.getFullYear() &&
+                    month === futureDate.getMonth() &&
+                    day > futureDate.getDate())
+        );
+    }
+
     async function list_tasks(callback) {
         if (process.stdout.columns < 105) {
             console.log("Terminal is too narrow.\nRequired width: 105");
@@ -108,110 +130,115 @@ const path = process.argv[1].replace("main.mjs", "");
         });
 
         for (let i = 0; i < tasks.length; i++) {
-            if (!tasks[i].due) {
-                rows.push([
-                    chalk.gray(i),
-                    chalk.gray("--"),
-                    chalk.gray(tasks[i].priority),
-                    chalk.gray(
-                        correct(
-                            tasks[i].content.length > 29
-                            ? tasks[i].content.slice(0, 27) + "..."
-                            : tasks[i].content
-                        )
-                    ),
-                    chalk.gray(
-                        tasks[i].description === "" || tasks[i].description === null
-                        ? "--"
-                        : correct(
-                            tasks[i].description.length > 29
-                            ? tasks[i].description.slice(0, 27) + "..."
-                            : tasks[i].description
-                        )
-                    ),
-                ]);
-            } else if (isToday(tasks[i])) {
-                rows.push([
-                    chalk.green(i),
-                    chalk.green(new Date(tasks[i].due.date).toDateString()),
-                    chalk.green(
-                        !!tasks[i].due.datetime
-                        ? incTime(tasks[i].due.datetime.slice(11, 16), 2)
-                        : "--"
-                    ),
-                    chalk.green(tasks[i].priority),
-                    chalk.green(
-                        correct(
-                            tasks[i].content.length > 29
-                            ? tasks[i].content.slice(0, 27) + "..."
-                            : tasks[i].content
-                        )
-                    ),
-                    chalk.green(
-                        tasks[i].description === "" || tasks[i].description === null
-                        ? "--"
-                        : correct(
-                            tasks[i].description.length > 29
-                            ? tasks[i].description.slice(0, 27) + "..."
-                            : tasks[i].description
-                        )
-                    ),
-                ]);
-            } else if (isOverdue(tasks[i])) {
-                rows.push([
-                    chalk.red(i),
-                    chalk.red(new Date(tasks[i].due.date).toDateString()),
-                    chalk.red(
-                        !!tasks[i].due.datetime
-                        ? incTime(tasks[i].due.datetime.slice(11, 16), 2)
-                        : "--"
-                    ),
-                    chalk.red(tasks[i].priority),
-                    chalk.red(
-                        correct(
-                            tasks[i].content.length > 29
-                            ? tasks[i].content.slice(0, 27) + "..."
-                            : tasks[i].content
-                        )
-                    ),
-                    chalk.red(
-                        tasks[i].description === "" || tasks[i].description === null
-                        ? "--"
-                        : correct(
-                            tasks[i].description.length > 29
-                            ? tasks[i].description.slice(0, 27) + "..."
-                            : tasks[i].description
-                        )
-                    ),
-                ]);
-            } else {
-                rows.push([
-                    chalk.blue(i),
-                    chalk.blue(new Date(tasks[i].due.date).toDateString()),
-                    chalk.blue(
-                        !!tasks[i].due.datetime
-                        ? incTime(tasks[i].due.datetime.slice(11, 16), 2)
-                        : "--"
-                    ),
-                    chalk.blue(tasks[i].priority),
-                    chalk.blue(
-                        correct(
-                            tasks[i].content.length > 29
-                            ? tasks[i].content.slice(0, 27) + "..."
-                            : tasks[i].content
-                        )
-                    ),
-                    chalk.blue(
-                        tasks[i].description === "" || tasks[i].description === null
-                        ? "--"
-                        : correct(
-                            tasks[i].description.length > 29
-                            ? tasks[i].description.slice(0, 27) + "..."
-                            : tasks[i].description
-                        )
-                    ),
-                ]);
+            if (
+                !isTooLate(tasks[i].due.date) || !isTooLate(tasks[i].due.datetime ? tasks[i].due.datetime.slice(0,11) : "3000-06-08") 
+            ) {
+                if (!tasks[i].due) {
+                    rows.push([
+                        chalk.gray(i),
+                        chalk.gray("--"),
+                        chalk.gray(tasks[i].priority),
+                        chalk.gray(
+                            correct(
+                                tasks[i].content.length > 29
+                                    ? tasks[i].content.slice(0, 27) + "..."
+                                    : tasks[i].content
+                            )
+                        ),
+                        chalk.gray(
+                            tasks[i].description === "" || tasks[i].description === null
+                                ? "--"
+                                : correct(
+                                    tasks[i].description.length > 29
+                                        ? tasks[i].description.slice(0, 27) + "..."
+                                        : tasks[i].description
+                                )
+                        ),
+                    ]);
+                } else if (isToday(tasks[i])) {
+                    rows.push([
+                        chalk.green(i),
+                        chalk.green(new Date(tasks[i].due.date).toDateString()),
+                        chalk.green(
+                            !!tasks[i].due.datetime
+                                ? incTime(tasks[i].due.datetime.slice(11, 16), 2)
+                                : "--"
+                        ),
+                        chalk.green(tasks[i].priority),
+                        chalk.green(
+                            correct(
+                                tasks[i].content.length > 29
+                                    ? tasks[i].content.slice(0, 27) + "..."
+                                    : tasks[i].content
+                            )
+                        ),
+                        chalk.green(
+                            tasks[i].description === "" || tasks[i].description === null
+                                ? "--"
+                                : correct(
+                                    tasks[i].description.length > 29
+                                        ? tasks[i].description.slice(0, 27) + "..."
+                                        : tasks[i].description
+                                )
+                        ),
+                    ]);
+                } else if (isOverdue(tasks[i])) {
+                    rows.push([
+                        chalk.red(i),
+                        chalk.red(new Date(tasks[i].due.date).toDateString()),
+                        chalk.red(
+                            !!tasks[i].due.datetime
+                                ? incTime(tasks[i].due.datetime.slice(11, 16), 2)
+                                : "--"
+                        ),
+                        chalk.red(tasks[i].priority),
+                        chalk.red(
+                            correct(
+                                tasks[i].content.length > 29
+                                    ? tasks[i].content.slice(0, 27) + "..."
+                                    : tasks[i].content
+                            )
+                        ),
+                        chalk.red(
+                            tasks[i].description === "" || tasks[i].description === null
+                                ? "--"
+                                : correct(
+                                    tasks[i].description.length > 29
+                                        ? tasks[i].description.slice(0, 27) + "..."
+                                        : tasks[i].description
+                                )
+                        ),
+                    ]);
+                } else {
+                    rows.push([
+                        chalk.blue(i),
+                        chalk.blue(new Date(tasks[i].due.date).toDateString()),
+                        chalk.blue(
+                            !!tasks[i].due.datetime
+                                ? incTime(tasks[i].due.datetime.slice(11, 16), 2)
+                                : "--"
+                        ),
+                        chalk.blue(tasks[i].priority),
+                        chalk.blue(
+                            correct(
+                                tasks[i].content.length > 29
+                                    ? tasks[i].content.slice(0, 27) + "..."
+                                    : tasks[i].content
+                            )
+                        ),
+                        chalk.blue(
+                            tasks[i].description === "" || tasks[i].description === null
+                                ? "--"
+                                : correct(
+                                    tasks[i].description.length > 29
+                                        ? tasks[i].description.slice(0, 27) + "..."
+                                        : tasks[i].description
+                                )
+                        ),
+                    ]);
+                }
             }
+            
         }
 
         CG({
@@ -236,7 +263,7 @@ const path = process.argv[1].replace("main.mjs", "");
 
         case "e":
             let help = false;
-            await list_tasks(async (tasks, confData, incTime) => {
+            await list_tasks(async (tasks, _confData, incTime) => {
                 console.log(`Syntax: <number> <option> [value] | help`);
                 const inpString = input(">> ");
                 if (!inpString) {
